@@ -51,6 +51,7 @@ sub select_iso {
     my $fileselect = $parent->FileSelect(
         -title => 'Select ISO',
         -directory => $ENV{HOME},
+        -filter => '*.iso',
     );
 
     $file = $fileselect->Show unless($file);
