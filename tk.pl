@@ -70,6 +70,8 @@ sub select_devices {
         -title => 'Select devices',
     );
 
+    $window->OnDestroy(sub { $parent->destroy });
+
     $window->Label(-text => "Please select devices to write $file to:")->pack;
 
     my %selected;
@@ -110,6 +112,9 @@ sub write_iso {
         -title => "Writing '$file' to devices " . join(', ' => keys %$devices),
     );
 
+    $window->transient($parent);
+    $window->protocol('WM_DELETE_WINDOW' => sub {});
+
     $window->Label(-text => "Writing '$file':")->pack;
 
     my $frame = $window->Frame;
@@ -122,7 +127,7 @@ sub write_iso {
     my $i = 0;
     for my $key (keys %$devices) {
         my $label = $frame->Label(
-            -text => $device{$key}->{ID_VENDOR} . ' ' . $device{$key}->{ID_MODEL} . ' (' . $device{$key}->{DEVNAME} . ')',
+            -text => $devices->{$key},
         )->grid( -column => 0, -row => $i );;
 
         my $progress_frame = $frame->Frame;
@@ -191,7 +196,11 @@ sub gui {
     my $mw = MainWindow->new();
     $mw->withdraw;
 
-    select_devices($mw, select_iso($mw, $ARGV[0]), \&write_iso);
+    # TODO - $mw->protocol('WM_DELETE_WINDOW', \&ExitApplication);
+
+    my $iso = select_iso($mw, $ARGV[0]) or return;
+
+    select_devices($mw, $iso, \&write_iso);
 
     Tk::MainLoop();
 }
